@@ -1,0 +1,112 @@
+"SCHDIST" IN (	'',
+		'CANDOR CENTRAL SCHOOL DISTRICT',
+		'CORTLAND CENTRAL SCHOOL DISTRICT',
+		'DRYDEN CENTRAL SCHOOL DISTRICT',
+		'GEORGE JR CENTRAL SCHOOL DISTRICT',
+		'GROTON CENTRAL SCHOOL DISTRICT',
+		'HOMER CENTRAL SCHOOL DISTRICT',
+		'ITHACA CITY SCHOOL DISTRICT',
+		'LANSING CENTRAL SCHOOL DISTRICT',
+		'MORAVIA CENTRAL SCHOOL DISTRICT',
+		'NEWARK VALLEY CENTRAL SCHOOL DISTRICT',
+		'NEWFIELD CENTRAL SCHOOL DISTRICT',
+		'ODESSA-MONTOUR CENTRAL SCHOOL DISTRICT',
+		'SOUTHERN CAYUGA CENTRAL SCHOOL DISTRICT',
+		'SPENCER-VAN ETTEN CENTRAL SCHOOL DISTRICT',
+		'TRUMANSBURG CENTRAL SCHOOL DISTRICT')
+
+
+"MUNI" IN (	'CITY OF ITHACA',
+		'NEWFIELD',
+		'TOWN OF CAROLINE',
+		'TOWN OF DANBY',
+		'TOWN OF DRYDEN',
+		'TOWN OF ENFIELD',
+		'TOWN OF GROTON',
+		'TOWN OF ITHACA',
+		'TOWN OF LANSING',
+		'TOWN OF NEWFIELD',
+		'TOWN OF ULYSSES',
+		'VILLAGE OF CAYUGA HEIGHTS',
+		'VILLAGE OF DRYDEN',
+		'VILLAGE OF FREEVILLE',
+		'VILLAGE OF GROTON',
+		'VILLAGE OF LANSING',
+		'VILLAGE OF TRUMANSBURG'
+)
+
+
+SELECT floodzone.geom, floodzone.zone, flood.desc
+FROM floodzone, flood
+WHERE floodzone.zone = flood.zone
+
+----------------------------
+
+SELECT parcels2007.*
+FROM parcels2007, watersheds
+WHERE st_contains(watersheds.geom,parcels2007.geom)
+AND watersheds.watershed = 'Fall Creek'
+
+
+raster2pgsql -s 26918 c:\temp\u27elu.dem public.ithdem > c:\temp\out.sql
+
+psql -U postgres -d postgres -f c:\temp\out.sql
+
+---------------------------
+
+SELECT parcels2007.*
+FROM parcels2007, floodzone
+WHERE st_intersects(parcels2007.geom,floodzone.geom)
+AND floodzone.zone = 'A'
+
+--------------------------
+
+SELECT min(st_distance(parcels2007.geom,floodzone.geom)) as dist
+FROM parcels2007, floodzone
+WHERE parcels2007.parcelkey = '50308907200000010011090000'
+and floodzone.zone = 'AE'
+
+----------------------------
+
+SELECT a.geom, a.loc || ' ' || a.location as addr
+FROM parcels2007 AS a, parcels2007 AS b
+WHERE st_touches(a.geom,b.geom)
+AND b.parcelkey = '50308907200000010011090000'
+
+----------------------------
+
+SELECT st_buffer(geom, 100) as geom, parcels2007.loc || ' ' || a.location as addr
+FROM parcels2007
+WHERE parcels2007.parcelkey = '50308907200000010011090000'
+
+--------------------------------
+
+SELECT  a.geom, a.loc || ' ' || a.location as addr
+FROM parcels2007 AS a, parcels2007 AS b
+WHERE b.parcelkey = '50308907200000010011090000'
+AND st_dwithin(a.geom,b.geom,200)
+
+--------------------------------
+
+SELECT st_intersection(watersheds .geom, floodzone .geom) as geom, watershed, floodzone.zone
+FROM watersheds, floodzone 
+WHERE watersheds.watershed = 'Fall Creek'
+AND st_intersects(watersheds.geom,floodzone .geom)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+========================================================
